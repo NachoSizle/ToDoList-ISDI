@@ -1,27 +1,51 @@
-import { useState } from 'react'
-import { PlusCircleIcon } from '@heroicons/react/solid'
-import { Button, Container, Input, Modal, Text } from "@nextui-org/react"
+import { ReactNode, useState } from 'react'
+import { Button, Input, Modal, Text } from "@nextui-org/react"
+import { NormalColors } from '@nextui-org/react';
+
+type AwesomeButton = {
+  icon?: ReactNode,
+  text?: string,
+  color?: NormalColors,
+  isShadow?: boolean,
+}
+
+export type ModalConfig = {
+  title: string,
+  openerButton?: AwesomeButton,
+  cancelButton?: AwesomeButton,
+  successButton?: AwesomeButton,
+}
 
 type AwesomeModalProps = {
-  handleCreateNewToDo: (title: string) => void,
+  handleSuccess: (title: string) => void,
+  titlePlaceholder?: string,
+  modalConfig: ModalConfig,
 }
 
 export default function AwesomeModal(props: AwesomeModalProps) {
-  const { handleCreateNewToDo } = props;
+  const { handleSuccess, modalConfig, titlePlaceholder } = props;
+  const { title, openerButton, cancelButton, successButton } = modalConfig;
+
   const [visible, setVisible] = useState(false);
-  const [title, setTitle] = useState('');
+  const [toDoTitle, setToDoTitle] = useState('');
 
   const closeHandler = () => {
     setVisible(false)
-    if (title !== '') {
-      handleCreateNewToDo(title)
-      setTitle('')
+    if (toDoTitle !== '') {
+      handleSuccess(toDoTitle)
+      setToDoTitle('')
     }
   };
 
   return (
-    <Container>
-      <Button shadow icon={<PlusCircleIcon />} color="success" onPress={() => setVisible(true)}>Add new ToDo</Button>
+    <div>
+      <Button auto
+        shadow={openerButton?.isShadow || false}
+        icon={openerButton?.icon}
+        color={openerButton?.color || "success"}
+        onPress={() => setVisible(true)}>
+          { openerButton?.text }
+      </Button>
       <Modal
         closeButton
         blur
@@ -31,30 +55,32 @@ export default function AwesomeModal(props: AwesomeModalProps) {
         onClose={closeHandler}>
         <Modal.Header>
           <Text id="modal-title" size={18}>
-            Add new
-            <Text b size={18}>
-              ToDo!
-            </Text>
+            { title }
           </Text>
         </Modal.Header>
         <Modal.Body>
           <Input rounded
             bordered
             status="primary"
-            placeholder="Make awesome React Component"
+            placeholder={titlePlaceholder || "Make awesome React Component"}
             aria-label='Title of new To Do'
-            value={title}
-            onChange={$event => setTitle($event.target.value)}/>
+            onChange={$event => setToDoTitle($event.target.value)}/>
         </Modal.Body>
         <Modal.Footer>
-          <Button auto flat color="error" onPress={closeHandler}>
-            Close
+          <Button auto flat
+            icon={cancelButton?.icon}
+            color={cancelButton?.color || "default"}
+            onPress={closeHandler}>
+              { cancelButton?.text || "Cancel" }
           </Button>
-          <Button auto onPress={closeHandler}>
-            Add!
+          <Button auto
+            icon={successButton?.icon}
+            color={successButton?.color || "default"}
+            onPress={closeHandler}>
+              { successButton?.text }
           </Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </div>
   )
 }

@@ -1,42 +1,49 @@
-import { PencilIcon, TrashIcon } from '@heroicons/react/solid'
-import { Button, Checkbox, Container, Row, Spacer, Table } from '@nextui-org/react'
-import AwesomeModal from '../AwesomeModal/AwesomeModal';
 
-const toDos: {
-  id: string,
-  title: string;
-  completed: boolean;
-}[] = [
-    {
-      id: '0',
-      title: "Make components",
-      completed: false,
-    },
-    {
-      id: '1',
-      title: "Make backend in NodeJS",
-      completed: false,
-    },
-    {
-      id: '2',
-      title: "Manage data in Redux Toolkit",
-      completed: false,
-    },
-    {
-      id: '3',
-      title: "Persist data in MongoDB",
-      completed: false,
-    },
-  ];
+import { PencilIcon, PlusCircleIcon, TrashIcon } from '@heroicons/react/solid'
+import { Button, Checkbox, Container, Col, Row, Spacer, Table, Text } from '@nextui-org/react'
+import AwesomeModal, { ModalConfig } from '../AwesomeModal/AwesomeModal'
+import { useAppSelector } from '../../hooks/useStore'
+import { useToDoActions } from '../../hooks/useToDoActions'
 
-type ToDoListProps = {
-  markToDoAsCompleted: (todoId: string) => void;
+const ADD_NEW_TODO_MODAL_CONFIG: ModalConfig = {
+  title: 'Add new ToDo',
+  openerButton: {
+    isShadow: true,
+    icon: <PlusCircleIcon />,
+    text: "Add new ToDo!"
+  },
+  successButton: {
+    text: "Create!",
+  }
 }
 
-export default function ToDoList(props: ToDoListProps) {
-  
-  const createNewToDo = ($toDoTitle: String) => {
-    console.log('Create new toDo --->>', $toDoTitle)
+const UPDATE_TODO_MODAL_CONFIG: ModalConfig = {
+  title: 'Update ToDo Title',
+  openerButton: {
+    icon: <PencilIcon />,
+  },
+  successButton: {
+    text: "Update title!",
+  }
+}
+
+export default function ToDoList() {
+  const toDos = useAppSelector(state => state.toDos)
+  const { createToDo, deleteById, updateStatus, updateTitle } = useToDoActions()
+
+  if (!toDos.length) {
+    return (
+      <Container>
+        <Row fluid justify="center" align="center" dir='column' css={{ textAlign: 'center' }}>
+          <Text b color="inherit" hideIn="xs">
+            You do not have tasks ;(
+          </Text>
+          <Spacer y={2} />
+          <AwesomeModal modalConfig={ADD_NEW_TODO_MODAL_CONFIG}
+            handleSuccess={($toDoTitle) => createToDo($toDoTitle)} />
+        </Row>
+      </Container>
+    )
   }
 
   return (
@@ -54,21 +61,23 @@ export default function ToDoList(props: ToDoListProps) {
           <Table.Column css={{ textAlign: "center" }}>Actions</Table.Column>
         </Table.Header>
         <Table.Body>
-          {toDos.map((todo) => (
-            <Table.Row key={todo.id}>
-              <Table.Cell>{todo.id}</Table.Cell>
-              <Table.Cell>{todo.title}</Table.Cell>
-              <Table.Cell css={{ textAlign: "center", pl:0 }}>
+          {toDos.map((toDo) => (
+            <Table.Row key={toDo._id}>
+              <Table.Cell>{toDo._id}</Table.Cell>
+              <Table.Cell>{toDo.title}</Table.Cell>
+              <Table.Cell css={{ textAlign: "center", pl: 0 }}>
                 <Checkbox aria-label='ToDo Status'
                   size='md'
-                  isSelected={todo.completed}
-                  onChange={() => props.markToDoAsCompleted(todo.id)}></Checkbox>
+                  isSelected={toDo.completed}
+                  onChange={() => updateStatus(toDo._id, !toDo.completed)}></Checkbox>
               </Table.Cell>
               <Table.Cell css={{ pl: "0.5rem" }}>
                 <Row justify="center" align="center">
-                  <Button icon={<PencilIcon />} auto></Button>
+                  <AwesomeModal modalConfig={UPDATE_TODO_MODAL_CONFIG}
+                    titlePlaceholder={toDo.title}
+                    handleSuccess={($toDoTitle) => updateTitle(toDo._id, $toDoTitle)} />
                   <Spacer y={1} />
-                  <Button icon={<TrashIcon />} color="error" auto></Button>
+                  <Button auto icon={<TrashIcon />} color="error" onPress={() => deleteById(toDo._id)}></Button>
                 </Row>
               </Table.Cell>
             </Table.Row>
@@ -76,7 +85,8 @@ export default function ToDoList(props: ToDoListProps) {
         </Table.Body>
       </Table>
       <Spacer y={1} />
-      <AwesomeModal handleCreateNewToDo={createNewToDo} />
+      <AwesomeModal modalConfig={ADD_NEW_TODO_MODAL_CONFIG}
+        handleSuccess={($toDoTitle) => createToDo($toDoTitle)} />
     </Container>
   );
 }

@@ -3,13 +3,11 @@ import { NextUIProvider } from '@nextui-org/react';
 
 import ToDoList from './components/ToDoList/ToDoList'
 import NavBar from './components/NavBar/NavBar'
-
+import { useToDoActions } from './hooks/useToDoActions'
 
 function App() {
-  const handleToDoCompleted = (todoId: string) => {
-    // MARK TODO COMPLETED
-    console.log('ToDo --->> Completed', todoId)
-  }
+  const { fetchAllToDos } = useToDoActions();
+  fetchAllToDos();
 
   return (
     <div className="App">
@@ -19,7 +17,7 @@ function App() {
         <Container fluid>
           <Card >
             <Card.Body>
-              <ToDoList markToDoAsCompleted={ handleToDoCompleted }/>
+              <ToDoList/>
             </Card.Body>
           </Card>
         </Container>
