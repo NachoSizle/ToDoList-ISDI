@@ -1,4 +1,4 @@
-const BACK_URL = "http://localhost:3000/"
+const BACK_URL = "https://to-do-list-isdi.onrender.com"
 
 enum METHODS {
   GET = 'GET',
